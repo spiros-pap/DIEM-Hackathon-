@@ -1,0 +1,533 @@
+*************************************
+*************************************
+*               Lab                *
+*************************************
+*************************************
+*** SNIPPET 1 ***
+// SPDX-License-Identifier: CC-BY-1.0
+// Creative Commons Attribution 1.0 Generic
+
+// Contract will be compiled on version 0.7.0 or greater
+pragma solidity ^0.7.0;
+
+// A smart contract to model a music album
+contract Album {
+
+} // Album
+
+
+*** SNIPPET 2 ***
+    // Local state variables
+    // The artist/group who recorded the album
+    string artist = 'Nirvana'; 
+    // The album's title
+    string albumTitle = 'Nevermind';
+    // The number of tracks on the album
+    uint tracks = 13;
+
+
+*** SNIPPET 3 ***
+    // Local state variables
+    // The artist/group who recorded the album
+    string public artist = 'Nirvana'; 
+    // The album's title
+    string public albumTitle = 'Nevermind';
+    // The number of tracks on the album
+    uint public tracks = 13;
+
+
+*** SNIPPET 4 ***
+// SPDX-License-Identifier: CC-BY-1.0
+// Creative Commons Attribution 1.0 Generic
+
+// Contract will be compiled on version 0.7.0 or greater
+pragma solidity ^0.7.0;
+
+// A smart contract to model a music album
+contract Album {
+    
+    // Local state variables
+    // The artist/group who recorded the album
+    string public artist; 
+    // The album's title
+    string public albumTitle;
+    // The number of tracks on the album
+    uint public tracks;
+    
+    constructor() {
+        artist = 'Nirvana';
+        albumTitle = 'Nevermind';
+        tracks = 13;
+    } // constructor
+    
+} // Album
+
+
+*** SNIPPET 5 ***
+    // The author of this smart contract
+    string public constant contractAuthor = 'YOUR NAME HERE';
+
+
+*** SNIPPET 6 ***
+    // Returns the current album information
+    function getAlbum() public view returns (string memory, string memory, uint) {
+        return (artist, albumTitle, tracks);
+    } // getAlbum
+    
+    // Set the album information
+    function setAlbum(string memory _artist, string memory _albumTitle, uint _tracks) public {
+        artist = _artist;
+        albumTitle = _albumTitle;
+        tracks = _tracks;
+    } // setAlbum
+
+
+
+*************************************
+*************************************
+*      Web 3 and node.js            *
+*************************************
+*************************************
+
+*** SNIPPET 1 ***
+install node.js
+npm install web3
+
+
+*** SNIPPET 2 *** 
+ADD index.html
+ADD main.css
+
+
+*** SNIPPET 3 *** main.css
+body {
+    background-color:#F0F0F0;
+    padding: 2em;
+    font-family: 'Raleway','Source Sans Pro', 'Arial';
+}
+.container {
+    width: 50%;
+    margin: 0 auto;
+}
+label {
+    display:block;
+    margin-bottom:10px;
+}
+input {
+    padding:10px;
+    width: 50%;
+    margin-bottom: 1em;
+}
+button {
+    margin: 2em 0;
+    padding: 1em 4em;
+    display:block;
+}
+
+#album {
+    padding:1em;
+    background-color:#fff;
+    margin: 1em 0;
+}
+
+
+*** SNIPPET 4 ***
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Album Dashboard</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>The Album Dashboard</h1>
+
+        <h2 id="album"></h2>
+
+		<label for="albumArtist" class="col-lg-2 control-label">Artist</label>
+        <input id="albumArtist" type="text">
+
+        <label for="albumName" class="col-lg-2 control-label">Album Name</label>
+        <input id="albumName" type="text">
+
+        <label for="tracks" class="col-lg-2 control-label">Tracks</label>
+        <input id="tracks" type="text">
+
+        <button id="button">Update Album</button>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+
+	// Update these variables with YOUR account number and contract address
+	var myAccountNumber = 'PASTE YOUR ACCOUNT NUMBER HERE (FROM GANACHE)';
+	var myContractAddress = 'PASTE YOUR DEPLOYED CONTRACT ADDRESS HERE (FROM GANACHE)';
+
+	// Create a new web3 reference
+	//web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+	
+	// The syntax below uses Web3's WebsocketProvider instead of the HttpProvider. This provider DOES support event subscriptions.
+	let web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:7545'))
+
+	// Check your account balance, display the result
+	web3.eth.getBalance(myAccountNumber).then(balance => console.log(balance));
+
+	// Build a reference to the smart contract.
+	var albumContract = new web3.eth.Contract('PASTE YOUR ABI HERE (without the quotes)');
+	albumContract.options.address = myContractAddress;
+
+	// Display contract info for confirmation	
+	console.log(album);
+
+	// Display album information.
+	albumContract.methods.getAlbum().call(function (error, result) {
+		// Display album artist, title, and tracks
+		if (!error) {
+			$("#album").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' tracks)');
+			console.log(result);
+		} else
+			console.error(error);
+	});
+
+	// Update the current album info using the user-provided information
+	$("#button").click(function () {
+		// Get album info from the UI
+		var theAlbumArtist = $("#albumArtist").val();
+		console.log("THE ALBUM ARTIST IS: " + theAlbumArtist);
+
+		var theAlbumName = $("#albumName").val();
+		console.log("THE ALBUM NAME IS: " + theAlbumName);
+
+		var albumTracks = $("#tracks").val();
+		console.log("THE NUMBER OF TRACKS IS: " + albumTracks);
+		
+		// Pass collected info to SetAlbum contract method
+		albumContract.methods.setAlbum(theAlbumArtist, theAlbumName, albumTracks).send({from:myAccountNumber});
+	});
+    </script>
+
+</body>
+
+</html>
+
+
+
+*************************************
+*************************************
+*               Events              *
+*************************************
+*************************************
+
+*** SNIPPET 1 ***
+    // Event which will be raised anytime the current album information is updated.
+    event albumEvent(string albumEvent_Artist, string albumEvent_Title, uint albumEvent_Tracks);
+
+
+*** SNIPPET 2 ***
+        // Raise the albumEvent to let any event subscribers know the current album information has changed.
+        emit albumEvent(_artist, _albumTitle, _tracks);
+
+
+*** SNIPPET 3 ***
+		<!--Display a spinner while waiting for information-->
+		<img id="loader" src="ajax-loader.gif">
+
+
+
+
+*** SNIPPET 4
+	albumContract.events.albumEvent(
+		function(error, result){
+			if (!error) {
+				$("#loader").hide();
+				$("#album").html('The current album is ' + result.returnValues.albumEvent_Title + 
+				' by ' + result.returnValues.albumEvent_Artist + 
+				'.<br/> It contains ' + result.returnValues.albumEvent_Tracks + ' tracks.');
+			} else {
+				$("#loader").hide();
+				console.log(error);
+			} // else
+		} // function(error, result)
+	); // albumContract.albumEvent
+
+
+*** SNIPPET 5
+		// Show the loading icon. This icon will be hidden when the albumEvent event is raised by the contract.
+		$("#loader").show();
+
+
+*** SNIPPET 6
+#loader {
+    display:none;
+}
+
+
+
+
+*************************************
+*************************************
+*               Access Control               *
+*************************************
+*************************************
+*** SNIPPET 1
+    // The owner of the current instance of this smart contract
+    address owner;
+
+
+*** SNIPPET 2
+        // Set the owner property of this contract instance to the initiator of this contract deployment
+        owner = msg.sender;
+
+
+*** SNIPPET 3
+    // This function modifier ensures that the initiator of any transaction 
+    //   it is attached to matches the address of the contract's owner.
+    // Use this function modifier for functions that should only
+    //   be performed by the owner of this contract instance.
+    modifier onlyOwner {
+        if (msg.sender != owner) {
+            // The initiator of this transaction is NOT the contract instance's owner!
+        } else {
+            _;
+        } // else
+    } // modifier onlyOwner
+
+
+*** SNIPPET 4
+    function setAlbum(string memory _artist, string memory _albumTitle, uint _tracks) onlyOwner public {
+
+
+*** SNIPPET 5
+    // Event which will be raised anytime the current album information is updated.
+    event errorEvent(string errorEvent_Description);
+
+
+*** SNIPPET 6
+            emit errorEvent("Only the owner of this contract instance can perform this function!");
+
+
+*** SNIPPET 7
+	albumContract.events.errorEvent(
+		function(error, result){
+			$("#loader").hide();
+			$("#album").html('<h1>ERROR: </h1><br/>' + result.returnValues.errorEvent_Description);
+		} // function(error, result)
+	); // albumContract.errorEvent
+
+
+
+
+*************************************
+*************************************
+*      Updates (Struct etc)         *
+*************************************
+*************************************
+
+*** SNIPPET 1
+    // A custom data structure used to define a music album
+    struct musicAlbum {
+        // The artist/group who recorded the album
+        string artist; 
+        // The album's title
+        string albumTitle;
+        // The number of tracks on the album
+        uint tracks;
+    } // struct musicAlbum
+
+
+*** SNIPPET 2
+    // The current album information
+    musicAlbum public currentAlbum;
+    // A mapping of every user's favorite album
+    mapping(address => musicAlbum) public userAlbums;
+
+
+*** SNIPPET 3
+    // Event which will be raised anytime the current album information is updated.
+    event albumEvent(string albumEvent_Description, string albumEvent_Artist, string albumEvent_Title, uint albumEvent_Tracks);
+
+
+*** SNIPPET 4
+    // Contract constructor.
+    //   This code is called once when the contract instance is deployed to the Ethereum network
+    constructor() {
+        // Feel free to use your own preferred values below :)
+        currentAlbum.artist = 'Nirvana';
+        currentAlbum.albumTitle = 'Nevermind';
+        currentAlbum.tracks = 13;
+        // Set the owner property of this contract instance to the initiator of this contract deployment
+        owner = msg.sender;
+    } // constructor
+
+
+*** SNIPPET 5
+    // Returns the current album information
+    function getCurrentAlbum() public view returns (string memory, string memory, uint) {
+        return (currentAlbum.artist, currentAlbum.albumTitle, currentAlbum.tracks);
+    } // getCurrentAlbum
+
+
+*** SNIPPET 6
+    // Set the current album information
+    function setCurrentAlbum(string memory _artist, string memory _albumTitle, uint _tracks) onlyOwner public {
+        currentAlbum.artist = _artist;
+        currentAlbum.albumTitle = _albumTitle;
+        currentAlbum.tracks = _tracks;
+        
+        // Raise the albumEvent to let any event subscribers know the current album information has changed.
+        emit albumEvent("The current album information has been updated", _artist, _albumTitle, _tracks);
+    } // setCurrentAlbum
+
+
+*** SNIPPET 7
+    // Returns the current user's favorite album information
+    function getUsersFavoriteAlbum() public view returns (string memory, string memory, uint) {
+        return (userAlbums[msg.sender].artist, userAlbums[msg.sender].albumTitle, userAlbums[msg.sender].tracks);
+    } // getUsersFavoriteAlbum
+    
+    // Set the current user's favorite album information
+    function setUsersFavoriteAlbum(string memory _artist, string memory _albumTitle, uint _tracks) public {
+        userAlbums[msg.sender].artist = _artist;
+        userAlbums[msg.sender].albumTitle = _albumTitle;
+        userAlbums[msg.sender].tracks = _tracks;
+        
+        // Raise the albumEvent to let any event subscribers know the current album information has changed.
+        emit albumEvent("You have updated your personal favorite album information", _artist, _albumTitle, _tracks);
+    } // setUsersFavoriteAlbum
+
+
+*** SNIPPET 8
+    <div class="container">
+        <h1>The Album Dashboard</h1>
+		<!--Display a spinner while waiting for information-->
+		<img id="loader" src="ajax-loader.gif">
+		<!--Status information coming from contract events-->		
+		<h2>Status Message:<br/></h2>		
+		<h2 id="status"></h2>
+		<!--Display current album information-->		
+		<h2>CURRENT ALBUM INFORMATION:<br/></h2>		
+		<h2 id="album"></h2>
+		<!--Display the current user's favorite album information-->		
+		<h2>CURRENT USER'S PERSONAL FAVORITE:<br/></h2>
+		<h2 id="userAlbum"></h2>
+		<!--Collect information to perform an update-->
+		<!--Get the Artist-->
+		<label for="albumArtist" class="col-lg-2 control-label">Artist</label>
+        <input id="albumArtist" type="text">
+		<!--Get the Album Title-->
+        <label for="albumName" class="col-lg-2 control-label">Album Name</label>
+        <input id="albumName" type="text">
+		<!--Get the number of tracks on the album-->
+        <label for="tracks" class="col-lg-2 control-label">Tracks</label>
+        <input id="tracks" type="text">
+		<!--Use this information to update the current album-->
+        <button id="button">Update Album</button>
+		<!--Use this information to update the current user's favorite album-->
+		<button id="userButton">Set My Personal Album</button>
+    </div>
+
+
+*** SNIPPET 9
+	// Display current album information.
+	albumContract.methods.getCurrentAlbum().call(function (error, result) {
+		// Display album artist, title, and tracks
+		if (!error) {
+			$("#album").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' tracks)');
+			console.log(result);
+		} else
+			console.error(error);
+	});
+
+
+*** SNIPPET 10
+	// Display current user's favorite album information.
+	albumContract.methods.getUsersFavoriteAlbum().call(function (error, result) {
+		// Display album artist, title, and tracks
+		if (!error) {
+			$("#userAlbum").html(result[0] + ' - ' + result[1] + ' (' + result[2] + ' tracks)');
+			console.log(result);
+		} else
+			console.error(error);
+	});
+
+
+*** SNIPPET 11
+	albumContract.events.albumEvent(
+		function(error, result){
+			if (!error) {
+				$("#loader").hide();
+				$("#status").html(result.returnValues.albumEvent_Description + '<br/>' + 
+					'ALBUM: ' + result.returnValues.albumEvent_Title +  '<br/>' + 
+					'ARTIST: ' + result.returnValues.albumEvent_Artist +  '<br/>' + 
+					result.returnValues.albumEvent_Tracks + ' tracks.');
+			} else {
+				$("#loader").hide();
+				console.log(error);
+			} // else
+		} // function(error, result)
+	); // albumContract.albumEvent
+
+
+*** SNIPPET 12
+	albumContract.events.errorEvent(
+		function(error, result){
+			$("#loader").hide();
+			$("#status").html('<h1>ERROR: </h1><br/>' + result.returnValues.errorEvent_Description);
+		} // function(error, result)
+	); // albumContract.errorEvent
+
+
+*** SNIPPET 13
+	// Update the current album info using the user-provided information
+	$("#button").click(function () {
+		// Get album info from the UI
+		var theAlbumArtist = $("#albumArtist").val();
+		console.log("THE ALBUM ARTIST IS: " + theAlbumArtist);
+
+		var theAlbumName = $("#albumName").val();
+		console.log("THE ALBUM NAME IS: " + theAlbumName);
+
+		var albumTracks = $("#tracks").val();
+		console.log("THE NUMBER OF TRACKS IS: " + albumTracks);
+		
+		// Show the loading icon. This icon will be hidden when the albumEvent event is raised by the contract.
+		$("#loader").show();
+		// Pass collected info to SetAlbum contract method
+		albumContract.methods.setCurrentAlbum(theAlbumArtist, theAlbumName, albumTracks).send({from:myAccountNumber});
+	});
+
+
+*** SNIPPET 14
+	// Update the current user's favorite album info using the user-provided information
+	$("#userButton").click(function () {
+		// Get album info from the UI
+		var theAlbumArtist = $("#albumArtist").val();
+		console.log("THE ALBUM ARTIST IS: " + theAlbumArtist);
+
+		var theAlbumName = $("#albumName").val();
+		console.log("THE ALBUM NAME IS: " + theAlbumName);
+
+		var albumTracks = $("#tracks").val();
+		console.log("THE NUMBER OF TRACKS IS: " + albumTracks);
+		
+		// Show the loading icon. This icon will be hidden when the albumEvent event is raised by the contract.
+		$("#loader").show();
+
+		// Pass collected info to SetAlbum contract method
+		albumContract.methods.setUsersFavoriteAlbum(theAlbumArtist, theAlbumName, albumTracks).send({from:myAccountNumber});
+	});
+
